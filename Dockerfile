@@ -6,21 +6,28 @@ RUN mkdir -p /home
 WORKDIR /home
 
 RUN apt-get update && apt-get install -y curl
+RUN apt-get install gcc -y
 # RUN apt-get install nginx-extra -y
 # RUN apt-get install -y libpcre3-dev libssl-dev perl make build-essential
 # RUN apt-get install -y libluajit-5.1-dev -y
 RUN apt-get install libpcre3 libpcre3-dev zlib1g-dev openssl libssl-dev libgd-dev libgeoip-dev lua5.3 liblua5.3-dev make build-essential -y
 COPY yugabyte-client-2.6-linux.tar.gz /home
 COPY lua-nginx-module-0.10.19.tar.gz /home
+COPY LuaJIT-2.0.1.tar.gz /home
 
 RUN tar -xvf yugabyte-client-2.6-linux.tar.gz
 RUN mv /home/yugabyte-client-2.6 /home/yugabyte
 RUN /home/yugabyte/bin/post_install.sh
 
+RUN tar -xvf LuaJIT-2.0.1.tar.gz
+WORKDIR /home/LuaJIT-2.0.1
+RUN make && make install
+
+WORKDIR /home
 RUN tar -xvf lua-nginx-module-0.10.19.tar.gz
 WORKDIR /home/lua-nginx-module-0.10.19
-RUN chmod +x ./config && \
-    ./configure --with-http_ssl_module --add-module=/home/lua-nginx-module-0.10.19/
+RUN chmod +x ./config
+RUN ./configure --with-http_ssl_module --add-module=/home/lua-nginx-module-0.10.19/
 RUN make && make install
 
 WORKDIR /home/yugabyte
